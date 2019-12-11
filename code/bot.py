@@ -27,18 +27,21 @@ class DiscordBot(discord.Client):
         returning False.
     """
 
-#    command_dict = { 
-#            "shutdown" : await self.close(),
-#    }
-#    """The dictionary maps each supported command to a method to execute when
-#    the bot receives the command.
-#
-#    Elements:
-#    ---------
-#        shutdown    ->  self.close()
-#            The bot is requested to shutdown and the command to do is is
-#            'self.close()'
-#    """
+    def __init__(self):
+        super().__init__()
+        self.command_dict = { 
+                "shutdown" : self.shutdown,
+                "help" : self.print_help,
+        }
+        """The dictionary maps each supported command to a method to execute when
+        the bot receives the command.
+
+        Elements:
+        ---------
+            shutdown    ->  self.close()
+                The bot is requested to shutdown and the command to do is is
+                'self.close()'
+        """
 
     def message_cutter(self,message):
         """The method add the words of the given Message 'message' to the ouput
