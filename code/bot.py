@@ -30,17 +30,29 @@ class DiscordBot(discord.Client):
     def __init__(self):
         super().__init__()
         self.command_dict = { 
-                "shutdown" : self.shutdown,
-                "help" : self.print_help,
+                "shutdown" : 
+                [ self.shutdown, "Shuts down the bot" ],
+                "help" : 
+                [ self.print_help, "Prints this message" ],
         }
         """The dictionary maps each supported command to a method to execute when
         the bot receives the command.
+
+        Each entry of the dictionary consists of a key, the name of the command,
+        and a list, which contains exactly two elements.
+
+        1st:    The name of the method executed, when the command is received via
+                the text chat.
+        2nd:    A description of the command that can be printed to the text
+                chat.
 
         Elements:
         ---------
             shutdown    ->  self.close()
                 The bot is requested to shutdown and the command to do is is
                 'self.close()'
+            help        ->  self.print_help(self,message)
+                The bot is requested to print all supported commands.
         """
 
     def message_cutter(self,message):
@@ -120,7 +132,7 @@ class DiscordBot(discord.Client):
         msg_content = str()
         msg_content += "The following commands are supported:\n"
         for key in self.command_dict:
-            msg_content += "\t%s\t%s\n"%(key,self.command_dict[key])
+            msg_content += "\t%s\t%s\n"%(key,self.command_dict[key][1])
 
         await message.channel.send( msg_content )
 
@@ -158,9 +170,9 @@ class DiscordBot(discord.Client):
 
         if command != False:
             if ( command[1] == 3 ) and ( command[2] in self.command_dict ):
-                await self.command_dict.get( command[2] )( command[0] )
+                await self.command_dict.get( command[2] )[0]( command[0] )
             elif ( command[1] > 3 ) and ( command[2] in self.command_dict ):
-                await self.command_dict.get( command[2] )( command[0], command[3:])
+                await self.command_dict.get( command[2] )[0]( command[0], command[3:])
             else:
                 await self.print_help(message)
 
