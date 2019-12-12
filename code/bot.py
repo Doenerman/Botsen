@@ -99,7 +99,7 @@ class DiscordBot(discord.Client):
                         command_end_pos = message.content.find(' ')
 
 
-                    return_value = command_list
+                return_value = command_list
 
         return return_value
 
