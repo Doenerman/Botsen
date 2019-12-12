@@ -61,8 +61,17 @@ class DiscordBot(discord.Client):
         Returns:
         --------
             list
-                A list of str. The str of the list are the words of 'message'
-                seperated by a whitespace.
+                A list is returned in case the Message 'message' begins with the
+                character '!'. If so list contains at least three elements, which
+                layout is as followed.
+                1st element:        The Message 'message' that requests the
+                                    command.
+                2nd element:        The number of additional arguments the
+                                    command got.
+                3rd element:        The 'str' of the command itself.
+                further elements:   The additional arguments for the command in
+                                    the same order, they apear in the Message
+                                    'message'.
             False
                 In case the parameter 'message' did not contain a command.
         """
@@ -71,10 +80,16 @@ class DiscordBot(discord.Client):
             is_command = message.content.startswith( command_prefix )
             if is_command:
                 command_end_pos = message.content.find(' ')
+                command_list = list()
+                command_list.append( message )
+                # compute length of the list
+                # +1 for information about the length
+                # +1 for the message itself
+                # +1 in case only on command is contains but no whitespace
+                command_list.append( message.content.count( ' ' ) +3)
                 if command_end_pos == -1:
-                    return_value = message.content[1:len(message.content)]
+                    command_list.append( message.content[1:len(message.content)] )
                 else:
-                    command_list = []
                     curr_command_start_pos = 1
                     while command_end_pos != -1:
                         command_list.append(
