@@ -103,6 +103,27 @@ class DiscordBot(discord.Client):
 
         return return_value
 
+    async def shutdown(self, message):
+        """The method disconnects the object from the Discrod-server and thus shuts
+        it down.
+        """
+        await self.close()
+
+    async def print_help(self, message):
+        """The method sends a message with all supported commands the bot can receive over
+        the text chat and react properly.
+
+        The method iterates over the dictionary 'command_dict' and adds each
+        entry to the text that will be send to Channel specified in the Message
+        'message'.
+        """
+        msg_content = str()
+        for key in self.command_dict:
+            msg_content += "\t%s\t%s\n"%(key,self.command_dict[key])
+#            msg_content += '  '.join(key).join( '\t-\t' ).join(self.command_dict[key] )
+
+        await message.channel.send( msg_content )
+
 
     async def on_ready(self):
         for guild in client.guilds:
