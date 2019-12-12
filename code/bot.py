@@ -118,9 +118,9 @@ class DiscordBot(discord.Client):
         'message'.
         """
         msg_content = str()
+        msg_content += "The following commands are supported:\n"
         for key in self.command_dict:
             msg_content += "\t%s\t%s\n"%(key,self.command_dict[key])
-#            msg_content += '  '.join(key).join( '\t-\t' ).join(self.command_dict[key] )
 
         await message.channel.send( msg_content )
 
