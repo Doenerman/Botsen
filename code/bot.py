@@ -136,10 +136,33 @@ class DiscordBot(discord.Client):
         )
 
     async def on_message(self,message):
+        """The event that is triggered, in case the bot recognizes an incoming
+        Message on the observed text channel. If a command is detected, it is
+        method is called with the arguments given in the Message 'message'.
+
+        The method calls 'message_cutter(self,message)' in order to check if the
+        given Message contains a command or can be ignored. If it contains a
+        command, the method expects a list with at least three elements with the
+        following elements:
+
+            1st:    The Message 'message' that requests the command.
+            2nd:    The number of additional arguments for the command.
+            3rd:    A 'str' of the command.
+            further elements:   Additional arguments for the command.
+
+        If the third entry of the list is a command that is a key in the
+        dictionary 'command_dict' the referenced method is called. If that is
+        not the case the method 'print_help(message)' is called.
+        """
         command = self.message_cutter( message )
 
         if command != False:
-            self.command_dict.get( command[0] )
+            if ( command[1] == 3 ) and ( command[2] in self.command_dict ):
+                await self.command_dict.get( command[2] )( command[0] )
+            elif ( command[1] > 3 ) and ( command[2] in self.command_dict ):
+                await self.command_dict.get( command[2] )( command[0], command[3:])
+            else:
+                await self.print_help(message)
 
 
 client = DiscordBot()
