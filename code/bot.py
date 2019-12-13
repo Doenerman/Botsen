@@ -139,6 +139,23 @@ class DiscordBot(discord.Client):
 
         await message.channel.send( msg_content )
 
+    async def print_help(self, message, command ):
+        """The method sends a help message for the given command on the text
+        channel of 'message'.The method sends a help message for the given
+        command on the text channel of 'message'.
+
+        The method checks if the given string 'command' is a key of the
+        dictionary 'command_dict'. If so, the description of that command is
+        send to the textchannel over which the Message 'message' was received
+        over. In case the command is not supported, a list of supported commands
+        is send to the text channel.
+        """
+        if command in self.command_dict:
+            await message.channel.send( self.command_dict[command][1] )
+        else:
+            await message.channel.send( "The command {command} is not supported" )
+            await self.print_commands( message )
+
 
     async def on_ready(self):
         for guild in client.guilds:
