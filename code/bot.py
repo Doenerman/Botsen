@@ -32,8 +32,9 @@ class DiscordBot(discord.Client):
         self.command_dict = { 
                 "shutdown" : 
                 [ self.shutdown, "Shuts down the bot" ],
-                "help" : 
+                "commands" : 
                 [ self.print_commands, "Prints this message" ],
+
         }
         """The dictionary maps each supported command to a method to execute when
         the bot receives the command.
