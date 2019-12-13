@@ -33,7 +33,7 @@ class DiscordBot(discord.Client):
                 "shutdown" : 
                 [ self.shutdown, "Shuts down the bot" ],
                 "help" : 
-                [ self.print_help, "Prints this message" ],
+                [ self.print_commands, "Prints this message" ],
         }
         """The dictionary maps each supported command to a method to execute when
         the bot receives the command.
@@ -51,7 +51,7 @@ class DiscordBot(discord.Client):
             shutdown    ->  self.close()
                 The bot is requested to shutdown and the command to do is is
                 'self.close()'
-            help        ->  self.print_help(self,message)
+            help        ->  self.print_commands(self,message)
                 The bot is requested to print all supported commands.
         """
 
@@ -121,7 +121,7 @@ class DiscordBot(discord.Client):
         """
         await self.close()
 
-    async def print_help(self, message):
+    async def print_commands(self, message):
         """The method sends a message with all supported commands the bot can receive over
         the text chat and react properly.
 
@@ -132,7 +132,9 @@ class DiscordBot(discord.Client):
         msg_content = str()
         msg_content += "The following commands are supported:\n"
         for key in self.command_dict:
-            msg_content += "\t%s\t%s\n"%(key,self.command_dict[key][1])
+            msg_content += "!%s "%(key)
+        msg_content += "\n\nFor descriptions for a command type:\n"
+        msg_content += "\t!help <command>"
 
         await message.channel.send( msg_content )
 
@@ -164,7 +166,7 @@ class DiscordBot(discord.Client):
 
         If the third entry of the list is a command that is a key in the
         dictionary 'command_dict' the referenced method is called. If that is
-        not the case the method 'print_help(message)' is called.
+        not the case the method 'print_commands(message)' is called.
         """
         command = self.message_cutter( message )
 
@@ -174,7 +176,7 @@ class DiscordBot(discord.Client):
             elif ( command[1] > 3 ) and ( command[2] in self.command_dict ):
                 await self.command_dict.get( command[2] )[0]( command[0], command[3:])
             else:
-                await self.print_help(message)
+                await self.print_commands(message)
 
 
 client = DiscordBot()
