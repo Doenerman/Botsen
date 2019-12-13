@@ -126,7 +126,7 @@ class DiscordBot(discord.Client):
         the text chat and react properly.
 
         The method iterates over the dictionary 'command_dict' and adds each
-        entry to the text that will be send to Channel specified in the Message
+        the key of entry to the text that will be send to Channel specified in the Message
         'message'.
         """
         msg_content = str()
