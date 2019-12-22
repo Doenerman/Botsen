@@ -15,7 +15,6 @@ class Player:
     The class provides functions to load local media and play it.
     """
 
-    wish_list = list()
     def __init__(self):
         """Initializes empty class variables.
         
