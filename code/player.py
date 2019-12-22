@@ -42,7 +42,7 @@ class Player:
                             released when ever 'self.wish_list' or
                             'self.wish_list'.
         """
-        self.vlc_player = None
+        self.vlc_player = MediaPlayer()
         self.wish_list = list()
         self.playing_thread = Thread( target=self.play )
         self.keep_playing = True
@@ -131,20 +131,8 @@ class Player:
 
                             self.change_player_list.release()
 
-                    # the variable 'self.vlc_player' is not of the type
-                    # 'MediaPlayer' which is expected to be, since it is used to
-                    # playback the media
-                    else:
-                        # edit vlc_player via semaphore
-                        self.change_player_list.acquire()
-
-                        # load the media into the vlc_player
-                        self.vlc_player = MediaPlayer( self.wish_list[0] )
-                        self.vlc_player.play()
-
-                        # update the wish_list
-                        self.wish_list.remove( self.wish_list[0] )
-                        self.change_player_list.release()
+                # the length of 'self.wish_list' is not greater than 0, so there
+                # is no song to play next.
                 else:
                     time.sleep(0.5)
             else:
