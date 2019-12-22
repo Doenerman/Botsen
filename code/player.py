@@ -169,6 +169,17 @@ class Player:
                 self.change_player_list.release()
 
 
+    def mute(self):
+        """The method toggles the mute of the audio output of the media
+        player 'self.vlc_player'.
+
+        When 'self.vlc_player' is an instance of 'MediaPlayer', the mothed
+        toggles the method 'self.vlc_player.audio_toggle_mute()'.
+        """
+        if isinstance( self.vlc_player, MediaPlayer ):
+            self.vlc_player.audio_toggle_mute()
+
+
     def queue(self,file_path):
         """The method adds the string 'file_path' to the end of the list 
         'self.wish_list' and starts playing.
