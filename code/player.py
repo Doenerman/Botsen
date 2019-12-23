@@ -71,7 +71,6 @@ class Player:
 
 
 
-
     def pause(self):
         """Pauses or resumes playing music.
         
@@ -104,6 +103,7 @@ class Player:
         'self.change_player_list' is acquired and released when ever
         'self.vlc_player' or 'self.wish_list' is edited.
         """
+        seconds_to_wait = 0.5
         while self.keep_playing:
             if not self.is_paused:
                 # self is expected to play until 'self.wish_list' is empty
@@ -114,7 +114,7 @@ class Player:
                         if self.vlc_player.is_playing():
                             # currently playing, nothing need to happen,
                             # so it can sleep to spare some resources
-                            time.sleep( 0.5 )
+                            time.sleep( seconds_to_wait )
                         else:
                             # there is no song playing at the moment, but there are
                             # tracks in 'self.wish_list' that still needs to be
@@ -133,11 +133,11 @@ class Player:
                 # the length of 'self.wish_list' is not greater than 0, so there
                 # is no song to play next.
                 else:
-                    time.sleep(0.5)
+                    time.sleep( seconds_to_wait )
             else:
                 # self is expected to pause, until the user requests to continue
                 # the playback
-                time.sleep(0.5)
+                time.sleep( seconds_to_wait )
 
 
     def skip(self):
