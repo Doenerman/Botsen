@@ -1,7 +1,7 @@
 # bot.py
 import os
 
-import discord
+from discord import Client
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,7 +14,7 @@ command_prefix = os.getenv('COMMAND_PREFIX')
 client = discord.Client()
 
 
-class DiscordBot(discord.Client):
+class DiscordBot( Client ):
     """A class of a Discrod Bot that can play audio to the voice channel.
 
     The class provides the functionality to read a text channel and react to the
