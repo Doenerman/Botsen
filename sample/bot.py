@@ -11,9 +11,6 @@ textChannel = os.getenv('DISCORD_TEXT_CHANNEL')
 
 command_prefix = os.getenv('COMMAND_PREFIX')
 
-client = discord.Client()
-
-
 class DiscordBot( Client ):
     """A class of a Discrod Bot that can play audio to the voice channel.
 
