@@ -54,7 +54,6 @@ class Player:
         """The destructor prepares the object to be destructed, by joining all
         threads and stopping the music.
         """
-        print(f'called destructor')
         if isinstance( self.vlc_player, MediaPlayer ):
             self.vlc_player.stop()
 
