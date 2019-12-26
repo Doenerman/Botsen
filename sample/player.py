@@ -42,13 +42,13 @@ class Player:
                             'self.wish_list'.
         """
         self.vlc_player = MediaPlayer()
+        self.change_player_list = Semaphore()
         self.wish_list = list()
-        self.playing_thread = Thread( target=self.play )
         self.keep_playing = True
         self.is_paused = False
+        self.playing_thread = Thread( target=self.play )
         self.playing_thread.start()
 
-        self.change_player_list = Semaphore()
 
     def __del__(self):
         """The destructor prepares the object to be destructed, by joining all
