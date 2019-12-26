@@ -57,7 +57,7 @@ class Player:
         if isinstance( self.vlc_player, MediaPlayer ):
             self.vlc_player.stop()
 
-        # stop and join the playing_thread
+        # wait for the playing_thread to terminate
         self.keep_playing = False
         self.playing_thread.join()
 
