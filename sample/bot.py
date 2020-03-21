@@ -185,6 +185,8 @@ class DiscordBot( Client ):
         """
         command = self.message_cutter( message )
 
+        print( "{}/{}: {}".format( message.channel, message.author, message.content) )
+
         if command != False:
             if ( command[1] == 3 ) and ( command[2] in self.command_dict ):
                 await self.command_dict.get( command[2] )[0]( command[0] )
