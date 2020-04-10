@@ -38,3 +38,15 @@ class Logger:
         print(
                 f"{self.color_exception}Exception: {log_string}{self.endc}"
         )
+
+    def log_message( self, message ):
+        """ The method prints the 'channel' over which the message is received,
+        the author that wrote the message and the content of the message into
+        the console.
+        """
+        if self.curr_msg_color == 0:
+            print( f"{message.channel}/{message.author}: {self.color_msg_0}{message.content}{self.endc}" )
+            self.curr_msg_color = 1
+        elif self.curr_msg_color == 1:
+            print( f"{message.channel}/{message.author}: {self.color_msg_1}{message.content}{self.endc}" )
+            self.curr_msg_color = 0
