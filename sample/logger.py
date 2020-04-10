@@ -13,6 +13,9 @@ class Logger:
         self.color_normal = '\033[92m'
         self.color_warning = '\033[93m'
         self.color_exception = '\033[91m'
+        self.curr_msg_color = 0
+        self.color_msg_0 = '\033[90m'
+        self.color_msg_1 = '\033[94m'
         self.endc = '\033[0m'
 
     def log_warning( self, log_string ):
