@@ -9,57 +9,11 @@ from discord.ext.commands import Bot
 from discord.voice_client import VoiceClient
 
 import dotenv
+import random
 from dotenv import load_dotenv
 
 
 import os
-
-import youtube_dl
-
-
-youtube_dl.utils.bug_reports_message = lambda: ''
-
-
-ytdl_format_options = {
-    'format': 'bestaudio/best',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
-    'noplaylist': True,
-    'nocheckcertificate': True,
-    'ignoreerrors': False,
-    'logtostderr': False,
-    'quiet': True,
-    'no_warnings': True,
-    'default_search': 'auto',
-    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
-}
-
-ffmpeg_options = {
-    'options': '-vn'
-}
-
-ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
-
-class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.5):
-        super().__init__(source, volume)
-
-        self.data = data
-
-        self.title = data.get('title')
-        self.url = data.get('url')
-
-    @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
-        loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
-
-        if 'entries' in data:
-            # take first item from a playlist
-            data = data['entries'][0]
-
-        filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
 load_dotenv()
@@ -77,6 +31,7 @@ async def shutdown(ctx):
 
         By logging the bot out, the application is also shutdown.
     """
+    await ctx.send('Ok, see you later than')
     await ctx.bot.logout()
 
 
@@ -101,6 +56,30 @@ async def summon(ctx):
              pass_context=True)
 async def singmysong( ctx, *, song):
     print( "no song" )
+
+@bot.command(brief="Let me roll some dices for you",
+             description="I will roll the desired dices for you "
+                         "print the result in this chat or in the global chat",
+            pass_context=True)
+async def roll(ctx, message):
+    print( "What are the dices to roll" )
+    if (isinstance(message, str)):
+        params = message.split(' ')
+        if (len(params) >= 1):
+            dicespec = []
+            if (params[0].find('W') > -1):
+                dicespec = params[0].split('W')
+            if (params[0].find('w') > -1):
+                dicespec = params[0].split('w')
+            print(dicespec)
+            if (len(dicespec) == 2):
+                res_sum = 0
+                for roll in range(int(dicespec[0])-1):
+                    curr_rand = random.randint(0, int(dicespec[1]))
+                    res_sum += curr_rand
+                    await ctx.send(curr_rand)
+                await ctx.send(res_sum)
+
 
 @bot.command(brief="Nicely ask the bot to join for a choral",
              description="Invite the bot to join voices for a sweet "
