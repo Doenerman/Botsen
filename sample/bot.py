@@ -61,26 +61,38 @@ async def singmysong( ctx, *, song):
              description="I will roll the desired dices for you "
                          "print the result in this chat or in the global chat",
             pass_context=True)
-async def roll(ctx, message):
-    print( "What are the dices to roll" )
+async def roll(ctx, message, *args):
+    print(ctx.message.author)
+    private = False
+    for arg in args:
+        if arg == '-p' or arg == '-P' or arg == '--private':
+            private = True
+    print(message)
     if (isinstance(message, str)):
         params = message.split(' ')
+        print('Parameters: ')
+        print(params)
         if (len(params) >= 1):
             dicespec = []
             if (params[0].find('W') > -1):
                 dicespec = params[0].split('W')
             if (params[0].find('w') > -1):
                 dicespec = params[0].split('w')
+            print( "What are the dices to roll" )
             print(dicespec)
             if (len(dicespec) == 2):
                 res_sum = 0
-                for roll in range(int(dicespec[0])-1):
+                for roll in range(int(dicespec[0])):
                     curr_rand = random.randint(0, int(dicespec[1]))
                     res_sum += curr_rand
+                     
                     await ctx.send(curr_rand)
-                await ctx.send(res_sum)
-
-
+                if (private):
+                    await ctx.message.author.send(res_sum)
+                else:
+                    await ctx.send(res_sum)
+        else:
+            print('Invalid Choice')
 @bot.command(brief="Nicely ask the bot to join for a choral",
              description="Invite the bot to join voices for a sweet "
                          "serenade with the notes given by the "
