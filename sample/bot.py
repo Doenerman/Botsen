@@ -23,6 +23,7 @@ textChannel = os.getenv('DISCORD_TEXT_CHANNEL')
 
 
 bot = Bot(os.getenv('COMMAND_PREFIX'))
+bot.owner_id = os.getenv('OWNER')
 
 @bot.command(brief="Shutsdown the bot",
              description="Stopping all current activities of the bot and shuts it down.")
@@ -31,8 +32,9 @@ async def shutdown(ctx):
 
         By logging the bot out, the application is also shutdown.
     """
-    await ctx.send('Ok, see you later than')
-    await ctx.bot.logout()
+    if ctx.author.name == ctx.bot.owner_id:
+        await ctx.send('Ok, see you later than')
+        await ctx.bot.logout()
 
 
 @bot.command(brief="Ask the bot to join the talk",
