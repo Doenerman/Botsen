@@ -1,146 +1,136 @@
 # bot.py
-
-import asyncio
-
-import discord
-from discord import ext
-from discord.ext import commands
-from discord.ext.commands import Bot
-from discord.voice_client import VoiceClient
-
-import dotenv
-import random
-from dotenv import load_dotenv
-
-
 import os
 
+from discord import Client
+from dotenv import load_dotenv
+
+from commands import command_dict
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 joinableGuild = os.getenv('DISCORD_GUILD')
 textChannel = os.getenv('DISCORD_TEXT_CHANNEL')
 
+command_prefix = os.getenv('COMMAND_PREFIX')
 
-bot = Bot(os.getenv('COMMAND_PREFIX'))
-bot.owner_id = os.getenv('OWNER')
+class DiscordBot( Client ):
+    """A class of a Discrod Bot that can play audio to the voice channel.
 
-@bot.command(brief="Shutsdown the bot",
-             description="Stopping all current activities of the bot and shuts it down.")
-async def shutdown(ctx):
-    """ Logs out the bot from discord
+    The class provides the functionality to read a text channel and react to the
+    content written.
 
-        By logging the bot out, the application is also shutdown.
+    Methods:
+    --------
+    message_cutter(messge)
+        Extracts the command of a message in case it contains one, otherwise
+        returning False.
     """
-    if ctx.author.name == ctx.bot.owner_id:
-        await ctx.send('Ok, see you later than')
-        await ctx.bot.logout()
 
+    def __init__(self):
+        super().__init__()
 
-@bot.command(brief="Ask the bot to join the talk",
-             description="Kindly ask the bot if it has some free time "
-                         "and interested in a little bit of chatting",
-             pass_context=True)
-async def summon(ctx):
-    """ Let the bot join the voice channel the context 'ctx'
-        
-        If the author of the context 'ctx' is part of a voice channel,
-        the bot also tries to enter the same channel.
-    """
-    if ctx.message.author.voice:
-        channel = ctx.message.author.voice.channel
-        await channel.connect()
+    def message_cutter(self,message):
+        """The method add the words of the given Message 'message' to the ouput
+        list in case the message starts with an '!'.
 
-@bot.command(brief="Nicely ask the bot to join for a choral of a private song",
-             description="Invite the bot to join voices for a sweet "
-                         "serenade that i composed at home to worship "
-                         "Lekeke",
-             pass_context=True)
-async def singmysong( ctx, *, song):
-    print( "no song" )
+        The method first checks if the message if from a channel where commands can
+        be send over. If that is the case and the message begins with '!' and
+        all words of the message are added to a list in the order they appear in
+        'message'.
 
-@bot.command(brief="Let me roll some dices for you",
-             description="I will roll the desired dices for you "
-                         "print the result in this chat or in the global chat",
-            pass_context=True)
-async def roll(ctx, message, *args):
-    print(ctx.message.author)
-    private = False
-    for arg in args:
-        if arg == '-p' or arg == '-P' or arg == '--private':
-            private = True
-    print(message)
-    if (isinstance(message, str)):
-        params = message.split(' ')
-        print('Parameters: ')
-        print(params)
-        if (len(params) >= 1):
-            dicespec = []
-            if (params[0].find('W') > -1):
-                dicespec = params[0].split('W')
-            if (params[0].find('w') > -1):
-                dicespec = params[0].split('w')
-            print( "What are the dices to roll" )
-            print(dicespec)
-            if (len(dicespec) == 2):
-                res_sum = 0
-                for roll in range(int(dicespec[0])):
-                    curr_rand = random.randint(0, int(dicespec[1]))
-                    res_sum += curr_rand
-                     
-                    await ctx.send(curr_rand)
-                if (private):
-                    await ctx.message.author.send(res_sum)
+        Parameters:
+        -----------
+        message : Message 
+            The Message that should be inspected and checked if there it
+            contains a command that has do be executed.
+
+        Returns:
+        --------
+            list
+                A list is returned in case the Message 'message' begins with the
+                character '!'. If so list contains at least three elements, which
+                layout is as followed.
+                1st element:        The Message 'message' that requests the
+                                    command.
+                2nd element:        The number of additional arguments the
+                                    command got.
+                3rd element:        The 'str' of the command itself.
+                further elements:   The additional arguments for the command in
+                                    the same order, they apear in the Message
+                                    'message'.
+            False
+                In case the parameter 'message' did not contain a command.
+        """
+        return_value = False
+        if message.channel.name == textChannel:
+            is_command = message.content.startswith( command_prefix )
+            if is_command:
+                command_end_pos = message.content.find(' ')
+                command_list = list()
+                command_list.append( message )
+                # compute length of the list
+                # +1 for information about the length
+                # +1 for the message itself
+                # +1 in case only on command is contains but no whitespace
+                command_list.append( message.content.count( ' ' ) +3)
+                if command_end_pos == -1:
+                    command_list.append( message.content[1:len(message.content)] )
                 else:
-                    await ctx.send(res_sum)
-        else:
-            print('Invalid Choice')
-@bot.command(brief="Nicely ask the bot to join for a choral",
-             description="Invite the bot to join voices for a sweet "
-                         "serenade with the notes given by the "
-                         "youtube link.",
-             pass_context=True)
-async def sing(ctx, *, url):
-    print(url)
-    
-    
-    for channel in bot.voice_clients:
-        async with ctx.typing():
-            player = await YTDLSource.from_url( url, loop=bot.loop )
-            channel.play(player, after=lambda e: pring( 'Player error: %s' ) if e else None )
-        await ctx.send( 'Now playing: {}'.format(player.title))
-
-@bot.command(brief="Gives the bot a small break",
-             description="Let the bot rest until there is someone that think he "
-                         "is fit enough to continue and get back to work.")
-async def rest(ctx):
-    """ Requests the bot to pause playing audio.
-
-        If the bot is currently playing some audio using the :class:VoiceClient
-        the playback is paused otherwise, a message is send to the channel of the
-        context.
-    """
-    for channel in bot.voice_clients:
-        if channel.is_playing():
-            channel.pause()
-        else:
-            await ctx.send( 'I don\'t need to rest, give me some action' )
+                    curr_command_start_pos = 1
+                    while command_end_pos != -1:
+                        command_list.append(
+                                message.content[curr_command_start_pos:command_end_pos]
+                        )
+                        curr_command_start_pos = command_end_pos
+                        command_end_pos = message.content.find(' ')
 
 
-@bot.command(brief="Commands the bot to continue playing",
-             description="Orders to bot to go back to work and entertain the folks")
-async def workwork(ctx):
-    """ Requests the bot to resumes playing audio.
+                return_value = command_list
 
-        If the bot is currently pause playing some audio using the :class:VoiceClient
-        the playback is resumed otherwise, a message is send to the channel of the
-        context.
-    """
-    for channel in bot.voice_clients:
-        if channel.is_paused():
-            channel.resume()
-        else:
-            await ctx.send( 'Give me a rest, i am already at work!!' )
+        return return_value
 
-# start the actual bot
-bot.run( token )
+
+    async def on_ready(self):
+        for guild in client.guilds:
+            if guild.name == joinableGuild:
+                break
+
+        print(
+            f'{client.user} has connected to the guild!\n'
+            f'{guild.name}(id: {guild.id})'
+        )
+
+    async def on_message(self,message):
+        """The event that is triggered, in case the bot recognizes an incoming
+        Message on the observed text channel. If a command is detected, it is
+        method is called with the arguments given in the Message 'message'.
+
+        The method calls 'message_cutter(self,message)' in order to check if the
+        given Message contains a command or can be ignored. If it contains a
+        command, the method expects a list with at least three elements with the
+        following elements:
+
+            1st:    The Message 'message' that requests the command.
+            2nd:    The number of additional arguments for the command.
+            3rd:    A 'str' of the command.
+            further elements:   Additional arguments for the command.
+
+        If the third entry of the list is a command that is a key in the
+        dictionary 'command_dict' the referenced method is called. If that is
+        not the case the method 'print_commands(message)' is called.
+        """
+        command = self.message_cutter( message )
+
+        print( "{}/{}: {}".format( message.channel, message.author, message.content) )
+
+        if command != False:
+            if ( command[1] == 3 ) and ( command[2] in command_dict ):
+                await command_dict.get( command[2] )[0](self, command[0] )
+            elif ( command[1] > 3 ) and ( command[2] in command_dict ):
+                await command_dict.get( command[2] )[0](self, command[0], command[3:])
+            else:
+                await Commands.print_commands(self, message.channel)
+
+
+client = DiscordBot()
+client.run(token)
