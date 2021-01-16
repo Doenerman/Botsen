@@ -112,7 +112,7 @@ class DiscordBot( Client ):
 
             1st:    The Message 'message' that requests the command.
             2nd:    The number of additional arguments for the command.
-            3rd:    A 'str' of the command.
+            3rd:    A 'str' of the command itself.
             further elements:   Additional arguments for the command.
 
         If the third entry of the list is a command that is a key in the
