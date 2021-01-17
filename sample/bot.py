@@ -7,13 +7,13 @@ import enum
 from discord import Client
 from dotenv import load_dotenv
 
-from commands import command_dict
+
+from commands import Commands
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 joinableGuild = os.getenv('DISCORD_GUILD')
 textChannel = os.getenv('DISCORD_TEXT_CHANNEL')
-
 command_prefix = os.getenv('COMMAND_PREFIX')
 
 
