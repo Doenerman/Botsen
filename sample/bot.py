@@ -49,36 +49,47 @@ class DiscordBot( Client ):
 
     def __init__(self):
         super().__init__()
+        self.coms = Commands(self)
 
-    def message_cutter(self,message):
+    def message_cutter(self, message: discord.Message):
         """The method add the words of the given Message 'message' to the ouput
-        list in case the message starts with an '!'.
+        dictionary in case the message starts with the 'command_prefix'.
 
         The method first checks if the message if from a channel where commands can
-        be send over. If that is the case and the message begins with '!' and
-        all words of the message are added to a list in the order they appear in
-        'message'.
+        be send over. If that is the case and the message begins with the
+        'command_prefix' and all words of the message are added to a list which
+        is the last entry of the dictionary. The dictionary is expected to have
+        the following keys:
+            Position.MSG:           The 'discord.Message' that contains the command.
+            Position.FUNC_NAME:     The name of the function/command that shall be
+                                    executed.
+            Position.ARG_COUNT      The number of arguments the function/command to be
+                                    exectued shall use.
+            optional:
+                Position.ARG_LIST   A list of additional arguments for the
+                                    function/command
 
         Parameters:
         -----------
-        message : Message 
-            The Message that should be inspected and checked if there it
+        message : discord.Message 
+            The discord.Message that should be inspected and checked if there it
             contains a command that has do be executed.
 
         Returns:
         --------
-            list
-                A list is returned in case the Message 'message' begins with the
-                character '!'. If so list contains at least three elements, which
-                layout is as followed.
-                1st element:        The Message 'message' that requests the
-                                    command.
-                2nd element:        The number of additional arguments the
-                                    command got.
-                3rd element:        The 'str' of the command itself.
-                further elements:   The additional arguments for the command in
-                                    the same order, they apear in the Message
-                                    'message'.
+            dict:
+                A dict is returned in case the discord.Message 'message' begins with the
+                character 'command_prefix'. The dictionary is expected to
+                contain the following keys:
+                    Position.MSG:       The 'discord.Message' that contains the command.
+                    Position.FUNC_NAME: The name of the function/command that shall be
+                                        executed.
+                    Position.ARG_COUNT  The number of arguments the function/command to be
+                                        exectued shall use.
+                and optional key is
+                    Position.ARG_LIST   A list of additional arguments for the
+                                        function/command
+                
             False
                 In case the parameter 'message' did not contain a command.
         """
@@ -87,26 +98,24 @@ class DiscordBot( Client ):
             is_command = message.content.startswith( command_prefix )
             if is_command:
                 command_end_pos = message.content.find(' ')
-                command_list = list()
-                command_list.append( message )
-                # compute length of the list
-                # +1 for information about the length
-                # +1 for the message itself
-                # +1 in case only on command is contains but no whitespace
-                command_list.append( message.content.count( ' ' ) +3)
+                command_dict = dict()
+                command_dict[Positions.MSG] = message
+                command_dict[Positions.ARG_COUNT] =  message.content.count( ' ' )
                 if command_end_pos == -1:
-                    command_list.append( message.content[1:len(message.content)] )
+                    command_dict[Positions.FUNC_NAME] = message.content[1:len(message.content)]
                 else:
                     curr_command_start_pos = 1
+                    command_args = list()
                     while command_end_pos != -1:
-                        command_list.append(
+                        command_args.append(
                                 message.content[curr_command_start_pos:command_end_pos]
                         )
                         curr_command_start_pos = command_end_pos
                         command_end_pos = message.content.find(' ')
+                    command_dict[ARG_LIST] = command_args
 
 
-                return_value = command_list
+                return_value = command_dict
 
         return return_value
 
