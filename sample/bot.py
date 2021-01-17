@@ -143,23 +143,34 @@ class DiscordBot( Client ):
             1st:    The Message 'message' that requests the command.
             2nd:    The number of additional arguments for the command.
             3rd:    A 'str' of the command itself.
-            further elements:   Additional arguments for the command.
+            4th:    List of additional arguments for the command.
 
         If the third entry of the list is a command that is a key in the
-        dictionary 'command_dict' the referenced method is called. If that is
+        dictionary 'self.coms.command_dict' the referenced method is called. If that is
         not the case the method 'print_commands(message)' is called.
         """
         command = self.message_cutter( message )
 
         print( "{}/{}: {}".format( message.channel, message.author, message.content) )
 
-        if command != False:
-            if ( command[1] == 3 ) and ( command[2] in command_dict ):
-                await command_dict.get( command[2] )[0](self, command[0] )
-            elif ( command[1] > 3 ) and ( command[2] in command_dict ):
-                await command_dict.get( command[2] )[0](self, command[0], command[3:])
-            else:
-                await Commands.print_commands(self, message.channel)
+        if command != False and len(command) > 2:
+            if command[Positions.FUNC_NAME] != '__init__':
+                if command[Positions.FUNC_NAME] in dir(self.coms):
+                    if command[Positions.ARG_COUNT] == 0:
+                        await getattr(self.coms,
+                                      command[Positions.FUNC_NAME])(command[Positions.MSG])
+                    if command[Positions.ARG_COUNT] > 0:
+                        await getattr(self.coms,
+                                      command[Positions.FUNC_NAME])(command[Positions.MSG],
+                                                                    command[Positions.ARG_LIST])
+                else:
+                    await self.coms.print_commands(command[Positions.MSG])
+
+        elif command != False:
+            print('\nError while decoding command:' + command[FUNC_NAME])
+            print(command)
+            print('\tThe command was ignored\n')
+
 
 
 client = DiscordBot()
