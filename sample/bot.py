@@ -1,6 +1,9 @@
 # bot.py
 import os
 
+import discord
+import enum
+
 from discord import Client
 from dotenv import load_dotenv
 
@@ -14,7 +17,17 @@ textChannel = os.getenv('DISCORD_TEXT_CHANNEL')
 command_prefix = os.getenv('COMMAND_PREFIX')
 
 
-class Positions():
+class Positions(enum.Enum):
+    """ An enum.Enum to determine the keys for dictionaries that contain
+    information about commands to be executed and their attributes.
+
+    Attributes:
+        MSG:        The key in a dictionary, whose value is the discord.Message
+                    that was received and which contains a command.
+        FUNC_NAME:  The name of the function/command to be executed.
+        ARG_COUNT:  The additional number of arguments that are mentioned.
+        ARG_LIST:   The list of additional arguments.
+    """
     MSG = 0
     FUNC_NAME = 1
     ARG_COUNT = 2
