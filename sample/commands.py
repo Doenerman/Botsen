@@ -1,6 +1,8 @@
 # commands.py
 import logging
 import discord
+import os
+import sys
 
 import decorator
 
@@ -11,6 +13,7 @@ CommandDict = decorator.decorator_dict
 
 
 command_dict = decorator.decorator_dict
+
 
 @decorator.command(desc="Let me tell you something about stuff " \
                         + "you don't know so far",
@@ -24,11 +27,12 @@ async def help(ctx: Context):
         await ctx.message.channel.send(command_dict[ctx.args[0]][Positions.DETAIL])
     else:
         msg_string = 'The given command is not supported. A list of commands i can ' \
-                     + 'understand is given below\n'
-        for command in command_dict:
+                     + 'understand is given below\n```'
+        for command in iter(sorted(command_dict)):
             msg_string += command + ', '
+        msg_string += '```'
         await ctx.message.channel.send(msg_string)
-                    
+
 
 @decorator.command(desc="Giving me the long awaited break.",
                    detail="Shotting me down, which makes me unreachable.")
