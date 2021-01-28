@@ -12,6 +12,10 @@ class Context:
     Attributes:
     ===========
 
+        args: list
+            A list of arguments that shall be passed to the commands
+            that were invoked by a chat command.
+
         client: discord.Client
             The client the commands shall be able to edit.
 
@@ -20,11 +24,17 @@ class Context:
     """
     def __init__(self, 
                  client: discord.Client,
-                 msg: discord.Message):
+                 msg: discord.Message,
+                 args: list = None):
         """ Initialize a object of this class.
 
         Parameter:
         ==========
+
+            args: list
+                A list of arguments that shall be passed to the command/function
+                to be executed.
+
             client: discord.Client
                 The client a command shall be edit and modify.
 
@@ -33,3 +43,5 @@ class Context:
         """
         self.client = client
         self.message = msg
+        if args == None:
+            self.args = list
