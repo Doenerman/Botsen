@@ -3,6 +3,8 @@ import logging
 import discord
 
 import decorator
+
+from context import Context
 from custom_enums import Positions
 
 CommandDict = decorator.decorator_dict
@@ -10,67 +12,27 @@ CommandDict = decorator.decorator_dict
 
 command_dict = decorator.decorator_dict
 
-async def print_commands(message: discord.Message):
-    """The method sends a message with all supported commands the bot can receive over
-    the text chat and react properly.
-
-    The method iterates over the dictionary 'command_dict' and adds each
-    the key of entry to the text that will be send to 'channel'.
-
-    Parameters:
-    -----------
-        client: discordClient
-            The discord client that shall print the command message into
-            'channel'.
-        channel: discord.Message.channel
-            The text channel, where the information string shall be send to.
+@decorator.command(desc="Let me tell you something about stuff " \
+                        + "you don't know so far",
+                   detail="Informs about a handling of and usage of " \
+                          + "a that is specified.")
+async def help(ctx: Context):
+    """ Print the detailed description of the method that is specified in
+    the 'context'.
     """
-    
-    msg_content = 'I don\'t know that command, but i can\'t help you either'
-    #msg_content += "The following commands are supported:\n"
-    #for key in self.command_dict:
-    #    msg_content += "!%s "%(key)
-    #msg_content += "\n\nFor descriptions for a command type:\n"
-    #msg_content += "\t!help <command>"
-
-    await message.channel.send( msg_content )
-
-@decorator.command(desc="Informs the monkey around about the requested command",
-                   detail="Gives a detailed description about the command "\
-                          " requested, in case it does exist at all")
-async def print_help(self,
-                     channel: discord.Message.channel,
-                     command: str):
-    """The method sends a help message for the given command on the text
-    channel of 'message'.The method sends a help message for the given
-    command on the text channel of 'message'.
-
-    The method checks if the given string 'command' is a key of the
-    dictionary 'command_dict'. If so, the description of that command is
-    send to the textchannel over which the Message 'message' was received
-    over. In case the command is not supported, a list of supported commands
-    is send to the text channel.
-
-    Parameters:
-    -----------
-        client: discord.Client
-            The discord client that shall print the information message about
-            the commands.
-        channel: discord.Message.channel
-            The text channel, where the information string shall be send to.
-        command:
-            The string of the command whose more detailed description is
-            requested.
-    """
-    if command in command_dict:
-        await channel.send( command_dict[command][1] )
+    if len(ctx.args) > 0 and ctx.args[0] in command_dict:
+        await ctx.message.channel.send(command_dict[ctx.args[0]][Positions.DETAIL])
     else:
-        await channel.send( "The command {command} is not supported" )
-        await self.print_commands( message )
+        msg_string = 'The given command is not supported. A list of commands i can ' \
+                     + 'understand is given below\n'
+        for command in command_dict:
+            msg_string += command + ', '
+        await ctx.message.channel.send(msg_string)
+                    
 
 @decorator.command(desc="Giving me the long awaited break.",
                    detail="Shotting me down, which makes me unreachable.")
-async def shutdown(client):
+async def shutdown(ctx: Context):
     """ Shuts down the given Discord Client.
 
         Parameters:
@@ -79,4 +41,5 @@ async def shutdown(client):
                 The client to shut down.
     """
     logging.info('Client shutting down')
-    await client.close()
+    await ctx.message.channel.send('Cya :wave:')
+    await ctx.client.close()
