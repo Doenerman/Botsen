@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 from commands import command_dict
 from commands import Positions
+from context import Context
 from custom_enums import Positions
 
 parser = argparse.ArgumentParser()
@@ -175,16 +176,20 @@ class DiscordBot(discord.Client):
                                              message.author,
                                              message.content) )
 
+        context = Context(self, message)
+
         if command != False and len(command) > 2:
             # check if the command exists
             if command[Positions.FUNC_NAME] in command_dict:
                 # execute the command
-                await command_dict[command[Positions.FUNC_NAME]][Positions.FUNC](self)
+                await command_dict[command[Positions.FUNC_NAME]][Positions.FUNC](context)
             else:
-                message.channel.send("The following commands are supported:")
+                msg_string = 'The following commands are supported:'
                 for command in command_dict:
-                    message.channel.send("\t" + command)
-                    message.channel.send("\t\t" + command_dict[command][Positions.DESC])
+                    msg_string += '\n\t' + command + '\t' \
+                                  + command_dict[command][Positions.DESC]
+                
+                await message.channel.send(msg_string)
 
 client = DiscordBot()
 client.run(token)
