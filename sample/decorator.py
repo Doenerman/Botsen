@@ -4,10 +4,9 @@ import enum
 import functools
 import logging
 
-class CommandDict(enum.Enum):
-    FUNC = 1
-    DESC = 2
-    DETAIL = 3
+from custom_enums import Positions
+
+
 
 decorator_dict = dict()
 
@@ -17,9 +16,9 @@ def command(desc: str = "",
     def inner(function):
         if not function.__name__ in decorator_dict:
             decorator_dict[function.__name__] = {
-                        CommandDict.FUNC: function,
-                        CommandDict.DESC: desc,
-                        CommandDict.DETAIL: detail
+                        Positions.FUNC: function,
+                        Positions.DESC: desc,
+                        Positions.DETAIL: detail
                     }
         @functools.wraps(function)
         async def wrapper(*args, **kwargs):

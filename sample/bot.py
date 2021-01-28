@@ -1,4 +1,6 @@
 # bot.py
+import argparse
+import logging
 import os
 
 import discord
@@ -7,8 +9,36 @@ import enum
 from discord import Client
 from dotenv import load_dotenv
 
+from commands import command_dict
+from commands import Positions
+from custom_enums import Positions
 
-from commands import Commands
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-log", 
+    "--log", 
+    default="warning",
+    help=(
+        "Provide logging level. "
+        "Example --log debug', default='warning'"),
+    )
+
+options = parser.parse_args()
+levels = {
+    'critical': logging.CRITICAL,
+    'error': logging.ERROR,
+    'warn': logging.WARNING,
+    'warning': logging.WARNING,
+    'info': logging.INFO,
+    'debug': logging.DEBUG
+}
+level = levels.get(options.log.lower())
+if level is None:
+    raise ValueError(
+        f"log level given: {options.log}"
+        f" -- must be one of: {' | '.join(levels.keys())}")
+logging.basicConfig(level=level)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -17,24 +47,7 @@ textChannel = os.getenv('DISCORD_TEXT_CHANNEL')
 command_prefix = os.getenv('COMMAND_PREFIX')
 
 
-class Positions(enum.Enum):
-    """ An enum.Enum to determine the keys for dictionaries that contain
-    information about commands to be executed and their attributes.
-
-    Attributes:
-        MSG:        The key in a dictionary, whose value is the discord.Message
-                    that was received and which contains a command.
-        FUNC_NAME:  The name of the function/command to be executed.
-        ARG_COUNT:  The additional number of arguments that are mentioned.
-        ARG_LIST:   The list of additional arguments.
-    """
-    MSG = 0
-    FUNC_NAME = 1
-    ARG_COUNT = 2
-    ARG_LIST = 3
-
-
-class DiscordBot( Client ):
+class DiscordBot(discord.Client):
     """A class of a Discrod Bot that can play audio to the voice channel.
 
     The class provides the functionality to read a text channel and react to the
@@ -49,7 +62,6 @@ class DiscordBot( Client ):
 
     def __init__(self):
         super().__init__()
-        self.coms = Commands(self)
 
     def message_cutter(self, message: discord.Message):
         """The method add the words of the given Message 'message' to the ouput
@@ -113,6 +125,13 @@ class DiscordBot( Client ):
                         curr_command_start_pos = command_end_pos
                         command_end_pos = message.content.find(' ')
                     command_dict[ARG_LIST] = command_args
+                
+                logging.debug('Command cut into:')
+                logging.debug('Positions.MSG: %s', command_dict[Positions.MSG])
+                logging.debug('Positions.ARG_COUNT: %s',
+                              command_dict[Positions.ARG_COUNT])
+                logging.debug('Positions.FUNC_NAME: %s',
+                              command_dict[Positions.FUNC_NAME])
 
 
                 return_value = command_dict
@@ -125,7 +144,7 @@ class DiscordBot( Client ):
             if guild.name == joinableGuild:
                 break
 
-        print(
+        logging.info(
             f'{client.user} has connected to the guild!\n'
             f'{guild.name}(id: {guild.id})'
         )
@@ -149,29 +168,23 @@ class DiscordBot( Client ):
         dictionary 'self.coms.command_dict' the referenced method is called. If that is
         not the case the method 'print_commands(message)' is called.
         """
-        command = self.message_cutter( message )
+        command = self.message_cutter(message)
 
-        print( "{}/{}: {}".format( message.channel, message.author, message.content) )
+        logging.info("-{}--{}/{}: {}".format(message.guild,
+                                             message.channel, 
+                                             message.author,
+                                             message.content) )
 
         if command != False and len(command) > 2:
-            if command[Positions.FUNC_NAME] != '__init__':
-                if command[Positions.FUNC_NAME] in dir(self.coms):
-                    if command[Positions.ARG_COUNT] == 0:
-                        await getattr(self.coms,
-                                      command[Positions.FUNC_NAME])(command[Positions.MSG])
-                    if command[Positions.ARG_COUNT] > 0:
-                        await getattr(self.coms,
-                                      command[Positions.FUNC_NAME])(command[Positions.MSG],
-                                                                    command[Positions.ARG_LIST])
-                else:
-                    await self.coms.print_commands(command[Positions.MSG])
-
-        elif command != False:
-            print('\nError while decoding command:' + command[FUNC_NAME])
-            print(command)
-            print('\tThe command was ignored\n')
-
-
+            # check if the command exists
+            if command[Positions.FUNC_NAME] in command_dict:
+                # execute the command
+                await command_dict[command[Positions.FUNC_NAME]][Positions.FUNC](self)
+            else:
+                message.channel.send("The following commands are supported:")
+                for command in command_dict:
+                    message.channel.send("\t" + command)
+                    message.channel.send("\t\t" + command_dict[command][Positions.DESC])
 
 client = DiscordBot()
 client.run(token)
