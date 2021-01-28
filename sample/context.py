@@ -44,4 +44,4 @@ class Context:
         self.client = client
         self.message = msg
         if args == None:
-            self.args = list
+            self.args = list()
