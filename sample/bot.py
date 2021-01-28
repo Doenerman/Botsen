@@ -184,11 +184,11 @@ class DiscordBot(discord.Client):
                 # execute the command
                 await command_dict[command[Positions.FUNC_NAME]][Positions.FUNC](context)
             else:
-                msg_string = 'The following commands are supported:'
-                for command in command_dict:
+                msg_string = 'The following commands are supported:```'
+                for command in iter(sorted(command_dict)):
                     msg_string += '\n\t' + command + '\t' \
                                   + command_dict[command][Positions.DESC]
-                
+                msg_string += '```'
                 await message.channel.send(msg_string)
 
 client = DiscordBot()
