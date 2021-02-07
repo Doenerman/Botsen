@@ -1,6 +1,9 @@
 # bot.py
 
+import argparse
 import asyncio
+import logging
+import sys
 
 import discord
 from discord import ext
@@ -16,6 +19,33 @@ import youtube_dl
 
 import os
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-log",
+    "--log",
+    default="warning",
+    help=(
+        "Provide logging level. "
+        "Example --log debug', default='warning'"),
+    )
+
+options = parser.parse_args()
+levels = {
+    'critical': logging.CRITICAL,
+    'error': logging.ERROR,
+    'warn': logging.WARNING,
+    'warning': logging.WARNING,
+    'info': logging.INFO,
+    'debug': logging.DEBUG
+}
+level = levels.get(options.log.lower())
+if level is None:
+    raise ValueError(
+        f"log level given: {options.log}"
+        f" -- must be one of: {' | '.join(levels.keys())}")
+logging.basicConfig(level=level)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -69,6 +99,36 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 bot = Bot(os.getenv('COMMAND_PREFIX'))
 
+##############
+### Events ###
+##############
+
+@bot.event
+async def on_ready():
+    logging.info('Discord Bot ready')
+
+###########
+## Music ##
+###########
+@bot.command(brief="Nicely ask the bot to join for a choral",
+             description="Invite the bot to join voices for a sweet "
+                         "serenade with the notes given by the "
+                         "youtube link.",
+             pass_context=True)
+async def sing(ctx, *, url):
+    logging.info(ctx.message.guild.__str__() + '-' + \
+                 ctx.message.author.__str__() + '- youtube: ' + url)
+    for channel in bot.voice_clients:
+        async with ctx.typing():
+            player = await YTDLSource.from_url( url, loop=bot.loop )
+            channel.play(player, after=lambda e: pring( 'Player error: %s' ) if e else None )
+        await ctx.send( 'Now playing: {}'.format(player.title))
+
+
+
+################
+### Commands ###
+################
 @bot.command(brief="Shutsdown the bot",
              description="Stopping all current activities of the bot and shuts it down.")
 async def shutdown(ctx):
@@ -76,8 +136,22 @@ async def shutdown(ctx):
 
         By logging the bot out, the application is also shutdown.
     """
-    await ctx.send('Ok, see you later than')
+    await ctx.send('Ok, see you later than', delete_after=5)
     await ctx.bot.logout()
+
+
+def restart_program():
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
+
+@bot.command(brief="Restarts me from scratch",
+             pass_context=True)
+async def restart(ctx):
+    """ Let the bot restart from the core.
+    """
+    await ctx.send('I am back in a sec', delete_after=5)
+    restart_program()
+
 
 
 @bot.command(brief="Ask the bot to join the talk",
@@ -93,14 +167,6 @@ async def summon(ctx):
     if ctx.message.author.voice:
         channel = ctx.message.author.voice.channel
         await channel.connect()
-
-@bot.command(brief="Nicely ask the bot to join for a choral of a private song",
-             description="Invite the bot to join voices for a sweet "
-                         "serenade that i composed at home to worship "
-                         "Lekeke",
-             pass_context=True)
-async def singmysong( ctx, *, song):
-    print( "no song" )
 
 @bot.command(brief="Let me roll some dices for you",
              description="I will roll the desired dices for you "
@@ -126,20 +192,6 @@ async def roll(ctx, message):
                 await ctx.send(res_sum)
 
 
-@bot.command(brief="Nicely ask the bot to join for a choral",
-             description="Invite the bot to join voices for a sweet "
-                         "serenade with the notes given by the "
-                         "youtube link.",
-             pass_context=True)
-async def sing(ctx, *, url):
-    print(url)
-    
-    
-    for channel in bot.voice_clients:
-        async with ctx.typing():
-            player = await YTDLSource.from_url( url, loop=bot.loop )
-            channel.play(player, after=lambda e: pring( 'Player error: %s' ) if e else None )
-        await ctx.send( 'Now playing: {}'.format(player.title))
 
 @bot.command(brief="Gives the bot a small break",
              description="Let the bot rest until there is someone that think he "
