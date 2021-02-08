@@ -76,7 +76,7 @@ ffmpeg_options = {
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.5):
+    def __init__(self, source, *, data, volume=1):
         super().__init__(source, volume)
 
         self.data = data
@@ -110,19 +110,44 @@ async def on_ready():
 ###########
 ## Music ##
 ###########
-@bot.command(brief="Nicely ask the bot to join for a choral",
-             description="Invite the bot to join voices for a sweet "
-                         "serenade with the notes given by the "
-                         "youtube link.",
-             pass_context=True)
-async def sing(ctx, *, url):
-    logging.info(ctx.message.guild.__str__() + '-' + \
-                 ctx.message.author.__str__() + '- youtube: ' + url)
-    for channel in bot.voice_clients:
-        async with ctx.typing():
-            player = await YTDLSource.from_url( url, loop=bot.loop )
-            channel.play(player, after=lambda e: pring( 'Player error: %s' ) if e else None )
-        await ctx.send( 'Now playing: {}'.format(player.title))
+class Music(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.track_list = []
+
+    @bot.command()
+    async def stop(ctx):
+        for channel in bot.voice_clients:
+            channel.stop()
+    
+    @bot.command()
+    async def pause(ctx):
+        for channel in bot.voice_clients:
+            channel.pause()
+    
+    @bot.command()
+    async def resume(ctx):
+        for channel in bot.voice_clients:
+            channel.resume()
+
+    @bot.command(brief="Nicely ask the bot to join for a choral",
+                 description="Invite the bot to join voices for a sweet "
+                             "serenade with the notes given by the "
+                             "youtube link.",
+                 pass_context=True)
+    async def sing(ctx, *, url):
+        logging.info(ctx.message.guild.__str__() + '-' + \
+                     ctx.message.author.__str__() + '- youtube: ' + url)
+
+        for channel in bot.voice_clients:
+            async with ctx.typing():
+                player = await YTDLSource.from_url( url, loop=bot.loop )
+                channel.play(player, 
+                             after=lambda e: pring( 'Player error: %s' ) if e else None )
+
+                song_info = 'Now playing: {}'.format(player.title)
+                await ctx.send(song_info)
+                await bot.change_presence(activity=discord.Game(name=player.title))
 
 
 
@@ -173,7 +198,7 @@ async def summon(ctx):
                          "print the result in this chat or in the global chat",
             pass_context=True)
 async def roll(ctx, message):
-    print( "What are the dices to roll" )
+    logging.info(ctx.message.author.__str__() + '- roll-request: ' + message)
     if (isinstance(message, str)):
         params = message.split(' ')
         if (len(params) >= 1):
@@ -182,7 +207,6 @@ async def roll(ctx, message):
                 dicespec = params[0].split('W')
             if (params[0].find('w') > -1):
                 dicespec = params[0].split('w')
-            print(dicespec)
             if (len(dicespec) == 2):
                 res_sum = 0
                 for roll in range(int(dicespec[0])):
@@ -190,6 +214,7 @@ async def roll(ctx, message):
                     res_sum += curr_rand
                     await ctx.send(curr_rand)
                 await ctx.send(res_sum)
+                logging.info(ctx.message.author.__str__() + '- roll-result: ' + res_sum.__str__())
 
 
 
